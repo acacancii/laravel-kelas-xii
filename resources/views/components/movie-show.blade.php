@@ -59,7 +59,7 @@
                       <tbody>
                         @foreach ($perans as $peran)
                         <tr>
-                          <td class="w3-list-info">{{ $peran->cast_id }}</td>
+                          <td class="w3-list-info">{{ $peran->cast->name ?? '-' }}</td>
                           <td class="w3-list-info">{{ $peran->actor }}</td>
                         </tr>
                         @endforeach
@@ -114,24 +114,57 @@
           </div>
         </div>
         <div class="clearfix"> </div>
-        <div class="all-comments">
+        <div class="all-comments" id="comments">
           <div class="all-comments-info">
             <a href="#">Comments</a>
             <div class="agile-info-wthree-box">
-              <form>
-                <input type="text" placeholder="Name" required="">			           					   
-                <input type="text" placeholder="Email" required="">
-                <input type="text" placeholder="Phone" required="">
-                <textarea placeholder="Message" required=""></textarea>
-                <input type="submit" value="SEND">
-                <div class="clearfix"> </div>
-              </form>
+              @if (session('success'))
+                <div class="alert alert-success" style="margin-bottom: 15px;">
+                  {{ session('success') }}
+                </div>
+              @endif
+
+              @guest
+                <div class="alert alert-warning" style="margin-bottom: 15px;">
+                  Silakan <a href="#" data-toggle="modal" data-target="#myModal" style="font-weight: bold; text-decoration: underline; color: #ff8d1b;">login terlebih dahulu</a> untuk memberikan komentar.
+                </div>
+              @endguest
+
+              @auth
+                @if ($errors->any())
+                  <div class="alert alert-danger" style="margin-bottom: 15px;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                      @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                      @endforeach
+                    </ul>
+                  </div>
+                @endif
+
+                <form action="{{ route('comments.store', $film->id) }}" method="POST">
+                  @csrf
+                  <div style="margin-bottom: 15px;">
+                    <label for="rating" style="font-weight: normal; font-size: 13px; color: #555;">Rating:</label>
+                    <select name="rating" id="rating" style="outline: none; border: 1px solid #D4D3D3; background: #fff; padding: 6px 10px; font-size: 13px; margin-left: 5px;" required>
+                      <option value="">-- Pilih Rating --</option>
+                      <option value="5" {{ old('rating') == '5' ? 'selected' : '' }}>5 ★★★★★ (Sangat Bagus)</option>
+                      <option value="4" {{ old('rating') == '4' ? 'selected' : '' }}>4 ★★★★☆ (Bagus)</option>
+                      <option value="3" {{ old('rating') == '3' ? 'selected' : '' }}>3 ★★★☆☆ (Cukup)</option>
+                      <option value="2" {{ old('rating') == '2' ? 'selected' : '' }}>2 ★★☆☆☆ (Kurang)</option>
+                      <option value="1" {{ old('rating') == '1' ? 'selected' : '' }}>1 ★☆☆☆☆ (Buruk)</option>
+                    </select>
+                  </div>
+                  <textarea name="comment" placeholder="Tulis komentar..." required>{{ old('comment') }}</textarea>
+                  <input type="submit" value="SEND">
+                  <div class="clearfix"> </div>
+                </form>
+              @endauth
             </div>
           </div>
           <div class="media-grids">
             @foreach ($comments as $comment)
               <div class="media">
-                <h5>{{ $comment->user_id }}</h5>
+                <h5>{{ $comment->user->name ?? 'Pengguna' }}</h5>
                 <div class="media-left">
                   <a href="#">
                     <img src="{{ asset('storage/images/user.jpg') }}" title="One movies" alt=" " />

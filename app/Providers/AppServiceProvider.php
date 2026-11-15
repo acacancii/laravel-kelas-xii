@@ -23,11 +23,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
-        if(Schema::hasTable('genres'))
-        {
-            view()->share('genres', Genre::all());
-            Paginator::useBootstrap();
-        }
+        Paginator::useBootstrap();
+
+        view()->composer('*', function ($view) {
+            try {
+                if (Schema::hasTable('genres')) {
+                    $view->with('genres', Genre::all());
+                }
+            } catch (\Throwable $e) {
+                $view->with('genres', collect());
+            }
+        });
     }
 }
